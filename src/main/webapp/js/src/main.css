@@ -1,0 +1,224 @@
+html, body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+#toc {
+	width: 150px;
+}
+
+#header {
+	margin: 0 0;
+}
+
+#map {
+	border: solid 2px #808775;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius: 4px;
+	margin: 5px;
+	padding: 0px;
+}
+
+.img-responsive {
+	margin-top: -60px;
+}
+
+#dialog .layer td {
+	
+}
+
+#basic-addon2 {
+	width: 20%;
+}
+
+@media all and (max-width:800px) {
+	#basic-addon2 {
+		width: 120px;
+	}
+}
+
+.input-group {
+	float: left;
+	width: 100%;
+}
+
+.irodco .subcontents a {
+	color: #000000;
+}
+
+.subcontents .rt-area {
+	width: 90%;
+	height: 200px;
+}
+
+#gallery {
+	width: 100%;
+	text-align: center;
+}
+
+.esriPopupWrapper th {
+	text-align: -webkit-left;
+	white-space: -webkit-nowrap;
+	vertical-align: top;
+	font-style: bold;
+}
+
+.esriPopupWrapper td {
+	display: table-cell;
+	vertical-align: inherit;
+}
+
+.subcontents .panel {
+	clear: both;
+}
+
+#map .progrss {
+	
+}
+
+.hide {
+	display: none;
+}
+
+#spot ul li.short {
+	color: #fff;
+	font-size: 0.87em;
+	line-height: 1.8;
+	padding: 2px;
+}
+
+#info {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	padding: 10px;
+	background-color: #fff;
+}
+
+#legend {
+	display: none;
+	right: 1em;
+	bottom: 1em;
+	position: absolute;
+	height: 180px;
+	width: 270px;
+	background-color: #FFFFFF;
+	opacity: 0.85;
+	border-radius: 7px;
+	z-index: 999;
+	padding: 1em;
+	font-size: 0.85em;
+	right: 1em;
+}
+/* styles applied to features */
+path[data-classbreak="classbreak0"] {
+	stroke: rgb(255, 245, 220);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(255, 215, 120);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak1"] {
+	stroke: rgb(255, 233, 185);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(255, 193, 60);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak2"] {
+	stroke: rgb(255, 220, 150);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(255, 170, 0);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak3"] {
+	stroke: rgb(253, 210, 120);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(241, 162, 6);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak4"] {
+	stroke: rgb(250, 200, 90);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(226, 154, 11);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak5"] {
+	stroke: rgb(248, 186, 60);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(211, 146, 17);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak6"] {
+	stroke: rgb(245, 172, 29);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(196, 138, 23);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak7"] {
+	stroke: rgb(227, 163, 36);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(182, 131, 29);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak8"] {
+	stroke: rgb(209, 154, 43);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(167, 123, 34);
+	fill-opacity: 0.8;
+}
+
+path[data-classbreak="classbreak9"] {
+	stroke: rgb(190, 144, 53);
+	stroke-width: 1pt;
+	stroke-opacity: 0.35;
+	fill: rgb(152, 115, 40);
+	fill-opacity: 0.8;
+}
+
+        /* mouse hover animation */
+    @keyframes highlight {
+        100% {
+            fill-opacity: 1;
+            stroke-width: 4;
+            stroke: rgb(220, 20, 60);
+        }
+    }
+
+    @-webkit-keyframes highlight {
+        100% {
+            fill-opacity: 1;
+            stroke-width: 4;
+            stroke: rgb(220, 20, 60);
+        }
+    }
+
+    path:hover {
+        cursor: pointer;
+        animation-duration: 0.2s;
+        animation-name: highlight;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+        -webkit-animation-duration: 0.2s;
+        -webkit-animation-name: highlight;
+        -webkit-animation-timing-function: linear;
+/*         -webkit-animation-fill-mode: forwards; */
+    }

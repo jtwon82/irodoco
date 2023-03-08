@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/batch
+        http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+	<!-- spring batch context -->
+	<bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>
+
+	<bean id="transactionManager"
+		class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+	<bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+
+	<!-- Must set this -->
+	<bean
+		class="org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor">
+		<property name="jobRegistry" ref="jobRegistry" />
+	</bean>
+
+	<bean id="jobRegistry"
+		class="org.springframework.batch.core.configuration.support.MapJobRegistry" />
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+				<property name="jobDetail" ref="jobDetail" />
+				<property name="cronExpression" value="0 0/5 * * * ?" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="jobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="com.irodco.task.JobLauncherDetails" />
+		<property name="group" value="quartz-batch" />
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="jobName" value="reportJob" />
+				<entry key="jobLocator" value-ref="jobRegistry" />
+				<entry key="jobLauncher" value-ref="jobLauncher" />
+				<entry key="addition" value="addition" />
+			</map>
+		</property>
+	</bean>
+
+
+	<job id="reportJob" xmlns="http://www.springframework.org/schema/batch">
+		<step id="step1">
+			<tasklet ref="myTasklet1"></tasklet>
+		</step>
+	</job>
+
+	<bean id="myTasklet1" class="com.irodco.task.Task1" />
+	
+	
+</beans>

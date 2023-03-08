@@ -1,0 +1,275 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.irodco.web.mapper.CommonsMapper">
+
+     <!--*********************************************************************
+     ****** FILE INSERT/DELETE/UPDATE/SELECT
+     *********************************************************************-->
+	
+	<select id="getCodeList" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM TB_CODE
+	</select>
+	
+	<!--
+	 * FILE LIST
+	-->
+    <select id="getFileList" parameterType="hashmap" resultType="hashmap">
+		SELECT ROWNUM AS RTF_COUNT,
+			   FILE_NO,      
+			   REF_TYPE,     
+			   REF_NO,       
+			   FILE_ORGNM,   
+			   FILE_TYPE,    
+			   FILE_SIZE,    
+			   FILE_PATH,    
+			   FILE_SAVENM,  
+			   REG_DATE,     
+			   FILE_STATE,   
+			   EXPRESS_IDX
+		  FROM TB_COMS_FILE
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+        <if test="ref_type != null and ref_type != ''">
+		   AND REF_TYPE = #{ref_type}
+        </if> 
+        <if test="ref_no != null and ref_no != ''">
+		   AND REF_NO = #{ref_no}
+        </if> 
+   		</trim>		  
+		 ORDER BY REF_TYPE,REF_NO,EXPRESS_IDX
+    </select>
+    
+	<!--
+	 * FILE : ALL ELEMENTS THAT OF A <FILE_NO>
+	-->
+    <delete id="multiFileDelete" parameterType="java.util.List">
+	<if test="list != null">
+		DELETE FROM TB_COMS_FILE
+	  	<trim prefix="WHERE" prefixOverrides="AND|OR">
+	       AND FILE_NO IN 
+	       	<foreach item="item" collection="list" open="(" separator="," close=")">
+	      		#{item}
+			</foreach>
+	 	</trim>		
+	</if>
+	</delete>
+    
+	<!--
+	 * FILE : ALL <FILE_NO> ELEMENTS THAT ARE A DIRECT CHILD OF A <REF_TYPE,REF_NO>
+	-->
+    <delete id="singleFileDelete" parameterType="hashmap">
+		DELETE FROM TB_COMS_FILE
+	  	<trim prefix="WHERE" prefixOverrides="AND|OR">
+        <if test="ref_type != null and ref_type != '' and ref_no != null and ref_no != ''">
+		   AND REF_TYPE = #{ref_type} 
+		   AND REF_NO = #{ref_no}
+        </if> 
+	 	</trim>		
+	</delete>
+
+	<!--
+	 * FILE : INSERT
+	  -->
+	<insert id="saveFile" parameterType="hashmap">
+		<selectKey resultType="int" keyProperty="file_no" order="BEFORE">
+			SELECT NVL(MAX(TO_NUMBER(FILE_NO)),0)+1 FROM TB_COMS_FILE					 
+		</selectKey> 	
+	    		INSERT INTO TB_COMS_FILE
+					(
+					   FILE_NO,      
+					   REF_TYPE,     
+					   REF_NO,       
+					   FILE_ORGNM,   
+					   FILE_TYPE,    
+					   FILE_SIZE,    
+					   FILE_PATH,    
+					   FILE_SAVENM,  
+					   REG_DATE,     
+					   FILE_STATE,   
+					   EXPRESS_IDX
+					)
+			  VALUES
+			  		(
+			  		 #{file_no,jdbcType=INTEGER},
+					 #{ref_type,jdbcType=VARCHAR}, 
+					 #{ref_no,jdbcType=INTEGER}, 
+					 #{file_orgnm,jdbcType=VARCHAR}, 
+					 #{file_type,jdbcType=VARCHAR}, 
+					 #{file_size,jdbcType=INTEGER}, 
+					 #{file_path,jdbcType=VARCHAR}, 
+					 #{file_savenm,jdbcType=VARCHAR}, 
+					 SYSDATE,
+					 'Y',
+					 0
+					 )
+	</insert> 
+	
+	<update id="updateFile" parameterType="hashmap">
+    	UPDATE TB_TRAFFIC SET
+				REF_TYPE = #{file_no,jdbcType=VARCHAR},    
+				REF_NO = #{file_no,jdbcType=INTEGER},       
+				FILE_ORGNM = #{file_no,jdbcType=VARCHAR},
+				FILE_TYPE = #{file_no,jdbcType=VARCHAR},
+				FILE_SIZE = #{file_no,jdbcType=INTEGER},
+				FILE_PATH = #{file_no,jdbcType=VARCHAR},
+				FILE_SAVENM = #{file_no,jdbcType=VARCHAR},
+				REG_DATE = #{file_no,jdbcType=VARCHAR},
+				FILE_STATE = #{file_no,jdbcType=VARCHAR},
+				EXPRESS_IDX = #{file_no,jdbcType=INTEGER}
+	  	<trim prefix="WHERE" prefixOverrides="AND|OR">
+        <if test="file_no != null and file_no != ''">
+		   AND FILE_NO = #{file_no} 
+        </if> 
+        <if test="ref_type != null and ref_type != '' and ref_no != null and ref_no != ''">
+		   AND REF_TYPE = #{ref_type} 
+		   AND REF_NO = #{ref_no}
+        </if> 
+	 	</trim>		     
+    </update>
+    
+     <!--*********************************************************************
+     ****** IMAGE FILE INSERT/DELETE/UPDATE/SELECT
+     *********************************************************************-->
+
+	<resultMap id="viewBlob" type="hashmap">
+    	<result property="IMG_DATA" column="IMG_DATA" jdbcType="BLOB" javaType="[B"/>
+    </resultMap>
+    	
+	<!--
+	 * IMAGE FILE LIST
+	-->
+    <select id="getImageList" parameterType="hashmap" resultMap="viewBlob">
+		SELECT ROWNUM AS RTF_COUNT,
+			   IMG_NO,       
+			   REF_TYPE,     
+			   REF_NO,       
+			   IMG_ORGNM,    
+			   IMG_TYPE,     
+			   IMG_SIZE,     
+			   IMG_WIDTH,    
+			   IMG_HEIGHT,   
+			   IMG_DATA,     
+			   IMG_PATH,     
+			   IMG_SAVENM,  
+			   IMG_LINK, 
+			   REG_DATE,     
+			   IMG_STATE,    
+			   EXPRESS_IDX  
+		  FROM TB_COMS_IMAGE
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+        <if test="ref_type != null and ref_type != ''">
+		   AND REF_TYPE = #{ref_type}
+        </if> 
+        <if test="ref_no != null and ref_no != ''">
+		   AND REF_NO = #{ref_no}
+        </if> 
+        <if test="img_no != null and img_no != ''">
+		   AND IMG_NO = #{img_no}
+        </if> 
+   		</trim>		  
+		 ORDER BY REF_TYPE,REF_NO,EXPRESS_IDX
+    </select>
+    
+	<!--
+	 * IMAGE FILE : ALL ELEMENTS THAT OF A <FILE_NO>
+	-->
+    <delete id="multiImageDelete" parameterType="java.util.List">
+	<if test="list != null">
+		DELETE FROM TB_COMS_IMAGE
+	  	<trim prefix="WHERE" prefixOverrides="AND|OR">
+	       AND IMG_NO IN 
+	       	<foreach item="item" collection="list" open="(" separator="," close=")">
+	      		#{item}
+			</foreach>
+	 	</trim>		
+	</if>
+	</delete>
+    
+	<!--
+	 * IMAGE FILE : ALL <FILE_NO> ELEMENTS THAT ARE A DIRECT CHILD OF A <REF_TYPE,REF_NO>
+	-->
+    <delete id="singleImageDelete" parameterType="hashmap">
+		DELETE FROM TB_COMS_IMAGE
+	  	<trim prefix="WHERE" prefixOverrides="AND|OR">
+        <if test="ref_type != null and ref_type != '' and ref_no != null and ref_no != ''">
+		   AND REF_TYPE = #{ref_type} 
+		   AND REF_NO = #{ref_no}
+        </if> 
+	 	</trim>		
+	</delete>
+
+	<!--
+	 * IMAGE FILE : INSERT
+	  -->
+	<insert id="saveImage" parameterType="hashmap">
+		<selectKey resultType="int" keyProperty="img_no" order="BEFORE">
+			SELECT NVL(MAX(TO_NUMBER(IMG_NO)),0)+1 FROM TB_COMS_IMAGE					 
+		</selectKey> 	
+	    		INSERT INTO TB_COMS_IMAGE
+					(
+					   IMG_NO,       
+					   REF_TYPE,     
+					   REF_NO,       
+					   IMG_ORGNM,    
+					   IMG_TYPE,     
+					   IMG_SIZE,     
+					   IMG_WIDTH,    
+					   IMG_HEIGHT,   
+					   IMG_DATA,     
+					   IMG_PATH,     
+					   IMG_SAVENM, 
+					   IMG_LINK,  
+					   REG_DATE,     
+					   IMG_STATE,    
+					   EXPRESS_IDX    
+					)
+			  VALUES
+			  		(
+			  		 #{img_no,jdbcType=INTEGER},
+					 #{ref_type,jdbcType=VARCHAR}, 
+					 #{ref_no,jdbcType=INTEGER}, 
+					 #{img_orgnm,jdbcType=VARCHAR}, 
+					 #{img_type,jdbcType=VARCHAR}, 
+					 #{img_size,jdbcType=INTEGER}, 
+					 #{img_width,jdbcType=INTEGER}, 
+					 #{img_height,jdbcType=INTEGER}, 
+					 #{img_data,jdbcType=BLOB}, 
+					 #{img_path,jdbcType=VARCHAR}, 
+					 #{img_savenm,jdbcType=VARCHAR}, 
+					 #{img_link,jdbcType=VARCHAR}, 
+					 SYSDATE,
+					 'Y',
+					 0
+					 )
+	</insert> 
+
+	<!--
+	 * IMAGE FILE : UPDATE
+	  -->	
+	<update id="updateImage" parameterType="hashmap">
+    	UPDATE TB_TRAFFIC SET
+			   IMG_NO      = #{img_no,jdbcType=INTEGER},       
+			   REF_TYPE    = #{ref_type,jdbcType=VARCHAR},     
+			   REF_NO      = #{ref_no,jdbcType=INTEGER},       
+			   IMG_ORGNM   = #{img_orgnm,jdbcType=VARCHAR},    
+			   IMG_TYPE    = #{img_type,jdbcType=VARCHAR},     
+			   IMG_SIZE    = #{img_size,jdbcType=INTEGER},     
+			   IMG_WIDTH   = #{img_width,jdbcType=INTEGER},    
+			   IMG_HEIGHT  = #{img_height,jdbcType=INTEGER},   
+			   IMG_DATA    = #{img_data,jdbcType=BLOB},     
+			   IMG_PATH    = #{img_path,jdbcType=VARCHAR},     
+			   IMG_SAVENM  = #{img_savenm,jdbcType=VARCHAR},   
+			   IMG_LINK    = #{img_link,jdbcType=VARCHAR},   
+			   REG_DATE    = #{reg_date,jdbcType=VARCHAR},     
+			   IMG_STATE   = #{img_state,jdbcType=VARCHAR},    
+			   EXPRESS_IDX = #{express_idx,jdbcType=INTEGER}   
+	  	<trim prefix="WHERE" prefixOverrides="AND|OR">
+        <if test="img_no != null and img_no != ''">
+		   AND IMG_NO = #{img_no} 
+        </if> 
+        <if test="ref_type != null and ref_type != '' and ref_no != null and ref_no != ''">
+		   AND REF_TYPE = #{ref_type} 
+		   AND REF_NO = #{ref_no}
+        </if> 
+	 	</trim>		     
+    </update>
+		
+</mapper>

@@ -1,0 +1,65 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.irodco.web.mapper.NoticeMapper">
+
+
+	<select id="getTopicNoticeListXXX" resultType="com.irodco.web.models.Notice">
+		SELECT * FROM TB_NOTICE WHERE IS_DEL = 'N' AND ROWNUM &lt; 4 ORDER BY NOTICE_ID DESC
+	</select>
+  <select id="getTopicNoticeList" resultType="com.irodco.web.models.Notice">
+    SELECT * FROM TB_NOTICE WHERE IS_DEL = 'N' AND 1 &lt; 4 ORDER BY NOTICE_ID DESC
+  </select>
+	
+	<select id="getNoticeList" resultType="com.irodco.web.models.Notice" parameterType="java.util.HashMap">
+            SELECT 
+                A.*
+                , ( SELECT CODE_NAME FROM TB_CODE AA WHERE AA.CODE_FILD='NOTICE_TYPE' AND A.NOTICE_TYPE=AA.CODE_ID ) CODE_KRNM
+			FROM ( 
+			    SELECT CEIL(RANK() OVER(ORDER BY NOTICE_ID DESC) / #{list_size} ) as page
+			    	, B.total_cnt, A.*
+			    FROM  TB_NOTICE A, (
+			    	SELECT count(*) total_cnt
+				    FROM  TB_NOTICE T 
+				    WHERE 1=1 
+					<if test="skey != null and skey != ''">and T.title like #{sval}</if>
+					<if test="auth == 'NONE'">and T.IS_DEL = 'N'</if>
+				) B
+			    WHERE 1=1 
+			    <if test="skey != null and skey != ''">and A.title like #{sval}</if>
+				<if test="auth == 'NONE'">and A.IS_DEL = 'N'</if>
+				ORDER BY NOTICE_ID desc 
+			) A where page = TO_NUMBER( #{page} )
+			ORDER BY NOTICE_ID
+	</select>
+
+	<select id="getNotice" resultType="com.irodco.web.models.Notice" parameterType="java.util.HashMap">
+		SELECT TITLE, NOTICE_TYPE, CONTENT, FILE_PATH, REGDATES, USER_ID, USER_NAME, REGDATE, REGDATES, IS_DEL
+                , ( SELECT CODE_NAME FROM TB_CODE AA WHERE AA.CODE_FILD='NOTICE_TYPE' AND A.NOTICE_TYPE=AA.CODE_ID ) CODE_KRNM
+			FROM TB_NOTICE A
+			WHERE NOTICE_ID = #{bid}
+	</select>
+	
+	<select id="selectNoticeMaxId" resultType="java.lang.Integer">
+		SELECT NVL(MAX(NOTICE_ID) + 1,1) NOTICE_ID
+			FROM TB_NOTICE
+	</select>
+	<insert id="insertNotice" parameterType="java.util.HashMap" useGeneratedKeys="false" >
+		INSERT INTO TB_NOTICE(NOTICE_ID, TITLE, CONTENT, NOTICE_TYPE, REGDATES, REGDATE, FILE_PATH, USER_ID)
+			VALUES(#{notice_id}, #{title}, #{content}, #{NOTICE_TYPE}, TO_CHAR(SYSDATE, 'YYYY-MM-DD'), SYSDATE, #{file_path}, #{USER_ID} )
+	</insert>
+	
+	<update id="updateNotice" parameterType="java.util.HashMap">
+		UPDATE TB_NOTICE 
+		SET UPDATE_DATE = SYSDATE
+			<if test="title != null and title != ''">, title=#{title}</if>
+			<if test="NOTICE_TYPE != null and NOTICE_TYPE != ''">, NOTICE_TYPE=#{NOTICE_TYPE}</if>
+			<if test="content != null and content != ''">, content=#{content}</if>
+			<if test="file_path != null and file_path != ''">, file_path = #{file_path}</if>
+			<if test="IS_DEL != null and IS_DEL != ''">, IS_DEL = #{IS_DEL}</if>
+		WHERE NOTICE_ID = ${bid}
+	</update>
+	
+	<delete id="deleteNotice" parameterType="java.util.HashMap">
+		DELETE FROM TB_NOTICE WHERE notice_id = #{bid}
+	</delete>
+
+</mapper>

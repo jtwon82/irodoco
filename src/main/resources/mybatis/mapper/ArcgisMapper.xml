@@ -1,0 +1,23 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.irodco.web.mapper.ArcgisMapper">
+
+	<select id="getStationList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT /* 정거장리스트 */
+			BUS_ROTE_ID
+		    , (SELECT BUS_ROTE_NAME FROM TB_BUS_ROTE WHERE BUS_ROTE_ID = A.BUS_ROTE_ID) BUS_ROTE_NAME
+		    , SQNC, A.STTN_ID, B.STTN_NAME, LTTD, LNGT
+		FROM  TB_ROTE_STTN_SQNC A, TB_BUS_STTN B
+		WHERE A.STTN_ID = B.STTN_ID
+		AND   BUS_ROTE_ID = #{BUS_ROTE_ID}
+	</select>
+	
+	<select id="getClassBreaksRender" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT B.* FROM (
+		    SELECT #{PRVN_NO} PRVN_NO FROM DUAL
+        ) A LEFT JOIN TB_PRVN_ROAD_STTS B
+        ON A.PRVN_NO = B.PRVN_NO
+		AND B.STTS_DT = #{STTS_DT}
+		<if test="PRVN_NO != null and PRVN_NO != ''">AND B.PRVN_NO = #{PRVN_NO}</if>
+	</select>
+	
+</mapper>

@@ -1,0 +1,342 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.irodco.web.mapper.FacilityMapper">
+
+<!-- ㅁ -->
+<!-- *	XXX 붙은ID는 안씁니다. -->
+<!-- ㅁ -->
+
+	<select id="getFacilityList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT /* 장비 리스트 조회 */
+			*
+			FROM ( 
+			    SELECT CEIL(RANK() OVER(ORDER BY CCTV_ID DESC) / #{list_size} ) as page
+			    	, B.total_cnt, A.*
+			    FROM TB_CCTV A, (
+			    	SELECT COUNT(*) total_cnt
+				    FROM TB_CCTV T 
+				    WHERE 1=1 
+				    <if test="skey != null and skey != ''">and T.CCTV_NM like #{sval}</if>
+				) B
+			    WHERE 1=1 
+			    <if test="skey != null and skey != ''">and A.CCTV_NM like #{sval}</if>
+			    ORDER BY CCTV_ID DESC
+			) A WHERE page = TO_NUMBER( #{page} )
+			ORDER BY CCTV_ID
+	</select>
+	<select id="getFacilityList2" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 'CCTV' OBJ_TYPE, A.CCTV_ID ID, CCTV_NM TITLE, LON, LAT
+			, STRM_URL, WEB_URL, ANDR_URL, IOS_URL, INTV_YN, B.DIR1, B.DIR2, B.DIR3, B.DIR4
+			FROM TB_CCTV A, TB_CCTV_DIRECTION B
+			WHERE A.CCTV_ID = B.CCTV_ID(+)
+			AND A.USE_YN='Y'
+			<if test="CCTV_ID != null">AND A.CCTV_ID=#{CCTV_ID}</if>
+			ORDER BY A.CCTV_ID
+	</select>
+	
+	<select id="getFacility" resultType="java.util.HashMap">
+        SELECT /* 장비 정보조회 */
+        	*
+            FROM TB_CCTV A
+            WHERE A.CCTV_ID = #{bid}
+	</select>
+	<select id="getFacility2" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT IMG_DATA
+			FROM TB_CCTV A, TB_CCTV_IMGE B
+			WHERE USE_YN='Y' AND A.CCTV_ID=B.CCTV_ID
+			AND A.CCTV_ID=#{CCTV_ID}
+	</select>
+	
+	
+	
+	<select id="getFacilityIMGE" resultType="java.util.HashMap">
+        SELECT /* 장비 정지영상 조회 */
+        	*
+            FROM TB_CCTV_IMGE A
+            WHERE A.CCTV_ID = #{bid}
+	</select>
+	
+	<select id="getFacilityDirection" resultType="java.util.HashMap">
+        SELECT /* 장비 방향별 예시 화면조회 */
+        	*
+            FROM TB_CCTV_DIRECTION A
+            WHERE A.CCTV_ID = #{bid}
+	</select>
+	
+	
+	<select id="selectFacilityMaxId" resultType="java.lang.String">
+		SELECT 'CCTV' || NVL(LPAD(MAX(SUBSTR(CCTV_ID,5,LENGTH(CCTV_ID)))+1,6,0),'000001') C FROM TB_CCTV
+	</select>
+	
+	<insert id="insertFacility" parameterType="java.util.HashMap" useGeneratedKeys="false" >
+		INSERT INTO TB_CCTV(CCTV_ID, CCTV_NM, CTLR_TYPE_CD, FAC_LCTN, IP, PORT, LON, LAT, CTLR_VER
+			, STRM_URL, WEB_URL, ANDR_URL, IOS_URL, USE_YN, LGN_ID, LGN_PASSWD, FIX_PSET_NO, DETECT_YN )
+			
+		VALUES(#{CCTV_ID}, #{CCTV_NM}, #{CTLR_TYPE_CD}, #{FAC_LCTN}, #{IP}, #{PORT}, #{LON}, #{LAT}, #{CTLR_VER}
+			, #{STRM_URL}, #{WEB_URL}, #{ANDR_URL}, #{IOS_URL}, #{USE_YN}, #{LGN_ID}, #{LGN_PASSWD}, #{FIX_PSET_NO}, #{DETECT_YN})
+	</insert>
+	
+	<update id="updateFacility" parameterType="java.util.HashMap">
+		UPDATE TB_CCTV
+		SET CCTV_ID=CCTV_ID
+			<if test="CCTV_NM != null">, CCTV_NM=#{CCTV_NM}</if>
+			<if test="CTLR_TYPE_CD != null">, CTLR_TYPE_CD=#{CTLR_TYPE_CD}</if>
+			<if test="FAC_LCTN != null">, FAC_LCTN=#{FAC_LCTN}</if>
+			<if test="IP != null">, IP=#{IP}</if>
+			<if test="PORT != null">, PORT=#{PORT}</if>
+			<if test="LON != null">, LON=#{LON}</if>
+			<if test="LAT != null">, LAT=#{LAT}</if>
+			<if test="CTLR_VER != null">, CTLR_VER=#{CTLR_VER}</if>
+			<if test="STRM_URL != null">, STRM_URL=#{STRM_URL}</if>
+			<if test="WEB_URL != null">, WEB_URL=#{WEB_URL}</if>
+			<if test="ANDR_URL != null">, ANDR_URL=#{ANDR_URL}</if>
+			<if test="IOS_URL != null">, IOS_URL=#{IOS_URL}</if>
+			<if test="USE_YN != null">, USE_YN=#{USE_YN}</if>
+			<if test="LGN_ID != null">, LGN_ID=#{LGN_ID}</if>
+			<if test="LGN_PASSWD != null">, LGN_PASSWD=#{LGN_PASSWD}</if>
+			<if test="FIX_PSET_NO != null">, FIX_PSET_NO=#{FIX_PSET_NO}</if>
+			<if test="DETECT_YN != null">, DETECT_YN=#{DETECT_YN}</if>
+			<if test="INTV_YN != null">, INTV_YN=#{INTV_YN}</if>
+		WHERE CCTV_ID = #{bid}
+	</update>
+	<update id="updateFacilityINTV_YN">
+		UPDATE TB_CCTV SET INTV_YN = #{INTV_YN} WHERE CCTV_ID=#{bid}
+	</update>
+	<update id="updateFacilityDirection" parameterType="java.util.HashMap">
+	    MERGE INTO TB_CCTV_DIRECTION T
+	        USING ( SELECT '${bid}' CCTV_ID FROM DUAL ) S
+	        ON ( T.CCTV_ID=S.CCTV_ID )
+	        WHEN MATCHED THEN
+				UPDATE SET UPDATE_DATE = SYSDATE
+					<if test="DIR1 != null and DIR1!=''">, DIR1=#{DIR1}</if>
+					<if test="DIR2 != null and DIR2!=''">, DIR2=#{DIR2}</if>
+					<if test="DIR3 != null and DIR3!=''">, DIR3=#{DIR3}</if>
+					<if test="DIR4 != null and DIR4!=''">, DIR4=#{DIR4}</if>
+					<if test="DIR1_BLOB != null and DIR1!=''">, DIR1_BLOB=#{DIR1_BLOB}</if>
+					<if test="DIR2_BLOB != null and DIR2!=''">, DIR2_BLOB=#{DIR2_BLOB}</if>
+					<if test="DIR3_BLOB != null and DIR3!=''">, DIR3_BLOB=#{DIR3_BLOB}</if>
+					<if test="DIR4_BLOB != null and DIR4!=''">, DIR4_BLOB=#{DIR4_BLOB}</if>
+	        WHEN NOT MATCHED THEN
+	            INSERT ( CCTV_ID
+	            	<if test="DIR1 != null and DIR1!=''">, DIR1</if>
+	            	<if test="DIR2 != null and DIR2!=''">, DIR2</if>
+	            	<if test="DIR3 != null and DIR3!=''">, DIR3</if>
+	            	<if test="DIR4 != null and DIR4!=''">, DIR4</if>
+	            	<if test="DIR1_BLOB != null and DIR1!=''">, DIR1_BLOB</if>
+	            	<if test="DIR2_BLOB != null and DIR2!=''">, DIR2_BLOB</if>
+	            	<if test="DIR3_BLOB != null and DIR3!=''">, DIR3_BLOB</if>
+	            	<if test="DIR4_BLOB != null and DIR4!=''">, DIR4_BLOB</if>, REG_DATE )
+	                VALUES ( S.CCTV_ID
+	                <if test="DIR1 != null and DIR1!=''">, #{DIR1}</if>
+	                <if test="DIR2 != null and DIR2!=''">, #{DIR2}</if>
+	                <if test="DIR3 != null and DIR3!=''">, #{DIR3}</if>
+	                <if test="DIR4 != null and DIR4!=''">, #{DIR4}</if>
+	                <if test="DIR1_BLOB != null and DIR1!=''">, #{DIR1_BLOB}</if>
+	                <if test="DIR2_BLOB != null and DIR2!=''">, #{DIR2_BLOB}</if>
+	                <if test="DIR3_BLOB != null and DIR3!=''">, #{DIR3_BLOB}</if>
+	                <if test="DIR4_BLOB != null and DIR4!=''">, #{DIR4_BLOB}</if>, SYSDATE )
+	</update>
+	<update id="updateFacilityDirectionDelete" parameterType="java.util.HashMap">
+		UPDATE TB_CCTV_DIRECTION 
+			SET UPDATE_DATE = SYSDATE
+				<if test="DIR1 != null and DIR1=='DELETE'">, DIR1=null, DIR1_BLOB=null</if>
+				<if test="DIR2 != null and DIR2=='DELETE'">, DIR2=null, DIR2_BLOB=null</if>
+				<if test="DIR3 != null and DIR3=='DELETE'">, DIR3=null, DIR3_BLOB=null</if>
+				<if test="DIR4 != null and DIR4=='DELETE'">, DIR4=null, DIR4_BLOB=null</if>
+			WHERE CCTV_ID = #{bid}
+	</update>
+	
+	<update id="updateFacilityQRcode" parameterType="java.util.HashMap">
+		UPDATE TB_CCTV SET QRCD_PATH = #{QRCODE_PATH} WHERE CCTV_ID = #{bid}
+	</update>
+	
+	<delete id="deleteFacility" parameterType="java.util.HashMap">
+		DELETE FROM TB_CCTV WHERE CCTV_ID = #{bid}
+	</delete>
+	
+	<select id="getEQIPList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT /* EQIP 리스트 조회 */
+			*
+			FROM ( 
+			    SELECT CEIL(RANK() OVER( ORDER BY EQIP_ID ) / #{list_size} ) as page
+			    	, B.total_cnt, A.*
+			    FROM TB_EQIP_MNGM A, (
+			    	SELECT COUNT(*) total_cnt
+				    FROM TB_EQIP_MNGM T 
+				    WHERE 1=1 
+				    <if test="skey != null and skey != ''">and T.CCTV_NM like #{sval}</if>
+				) B
+			    WHERE 1=1 
+			    <if test="skey != null and skey != ''">and A.CCTV_NM like #{sval}</if>
+			    ORDER BY EQIP_ID 
+			) A WHERE page = TO_NUMBER( #{page} )
+			ORDER BY EQIP_ID
+	</select>
+	<select id="getEQIP" resultType="java.util.HashMap">
+        SELECT /* 장비 정보조회 */
+        	*
+            FROM TB_EQIP_MNGM A
+            WHERE A.EQIP_ID = #{bid}
+	</select>
+	<update id="updateEQIP" parameterType="java.util.HashMap">
+		UPDATE TB_EQIP_MNGM SET IMG_PATH=#{IMG_PATH} WHERE EQIP_ID = #{bid}
+	</update>
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="getIncidentList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 'INCIDENT' OBJ_TYPE, INCI_ID ID, INCI_TITLE TITLE, LON, LAT
+            , STRT_DT, END_DT
+            , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='PRCS_STAT' AND A.PRCS_STAT=B.CODE_ID ) PRCS_STAT
+            , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='RSCT_TYPE' AND A.RSCT_TYPE=B.CODE_ID ) RSCT_TYPE
+            , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='COLL_MTHD' AND A.COLL_MTHD=B.CODE_ID ) COLL_MTHD
+            , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='INCI_TYPE' AND A.INCI_TYPE=B.CODE_ID ) INCI_TYPE
+            , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='INCI_KIND' AND A.INCI_KIND=B.CODE_ID ) INCI_KIND
+            , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='TRBL_GRADE' AND A.TRBL_GRADE=B.CODE_ID ) TRBL_GRADE
+            FROM TB_INCIDENT_HISR A
+            WHERE SRVC_YN='Y'
+            AND PRCS_STAT='2'
+	</select>
+	
+	
+	<select id="getProcessStatInfo" resultType="java.util.HashMap">
+                SELECT 1 IDX
+                , MIN(CASE WHEN ID=1 AND R=1 THEN STAT END) C1
+                , MIN(CASE WHEN ID=2 AND R=2 THEN STAT END) C2
+                , MIN(CASE WHEN ID=3 AND R=3 THEN STAT END) C3
+                , MIN(CASE WHEN ID=4 AND R=4 THEN STAT END) C4
+                , MIN(CASE WHEN ID=5 AND R=5 THEN STAT END) C5
+                , MIN(CASE WHEN ID=6 AND R=6 THEN STAT END) C6
+                , MIN(CASE WHEN ID=7 AND R=7 THEN STAT END) C7
+                FROM (
+                    SELECT CODE_ID ID FROM TB_CODE WHERE CODE_FILD='UPPR_STCT_MODE' AND CODE_ID &lt; 8
+                )A, (
+                    SELECT ROWNUM R, B.PRCS_NAME
+                        , CASE WHEN COMM_STUS_CODE+OPRT_STUS_CODE &gt; 0 AND CLLC_DT &gt; SYSDATE - 5/1440 THEN 'ON' ELSE 'OFF' END STAT
+                    FROM (
+                        SELECT RANK() OVER(PARTITION BY PRCS_ID ORDER BY CLLC_DT DESC) RK
+                            , A.*
+                            FROM TB_PRCS_STUS_HSTR A
+                    ) A, TB_PRCS B
+                    WHERE A.RK=1 AND A.PRCS_ID=B.PRCS_ID
+                )B
+                GROUP BY 1
+	</select>
+	
+	<select id="getCCTVStatInfo" resultType="java.util.HashMap">
+	    SELECT *
+		    FROM (
+                SELECT RANK() OVER(PARTITION BY CCTV_ID ORDER BY CLLC_DT DESC) RK
+                    , CCTV_ID, CLLC_DT
+                    , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='CCTV_STAT_COMM_STAT' AND A.COMM_STUS_CODE=B.CODE_ID ) COMM_STAT_STR
+                    , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='CCTV_STAT_POWR_STAT' AND A.PWER_STUS_CODE=B.CODE_ID ) POWR_STAT_STR
+                    , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='CCTV_STAT_FAN_STAT' AND A.FAN_STUS_CODE=B.CODE_ID ) FAN_STAT_STR
+                    , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='CCTV_STAT_HEAT_STAT' AND A.HEAT_STUS_CODE=B.CODE_ID ) HEAT_STAT_STR
+                    , ( SELECT CODE_NAME FROM TB_CODE B WHERE B.CODE_FILD='CCTV_STAT_CAM_STAT' AND A.CAM_STUS_CODE=B.CODE_ID ) CAM_STAT_STR
+                    , A.COMM_STUS_CODE, A.PWER_STUS_CODE, A.FAN_STUS_CODE, A.HEAT_STUS_CODE, A.CAM_STUS_CODE
+                FROM TB_CCTV_STUS_HSTR  A
+                ORDER BY CLLC_DT DESC
+		    ) AA
+		    WHERE RK=1
+		    ORDER BY CCTV_ID
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<select id="getFacilityHistoryListXXX" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT *
+			FROM ( 
+			    SELECT CEIL(RANK() OVER(ORDER BY HIST_ID DESC) / #{list_size} ) as page
+                    , B.total_cnt, A.*
+                    , CASE WHEN A.HIST_TYPE='1' THEN '전원상태'
+                    	WHEN A.HIST_TYPE='2' THEN '통신상태'
+                    	WHEN A.HIST_TYPE='3' THEN '모듈상태'
+                    	END HIST_TYPE_STR
+                    , C.IP
+			    FROM TB_CCTV_HISTORY A, (
+			    	SELECT COUNT(*) total_cnt
+				    FROM TB_CCTV_HISTORY T 
+				    WHERE 1=1 
+				    AND CCTV_ID = #{ CCTV_ID }
+				    <if test="skey != null and skey != ''">and T.HIST_TYPE like #{sval}</if>
+				) B, TB_CCTV C
+			    WHERE 1=1 
+                AND A.CCTV_ID = C.CCTV_ID(+)
+			    AND A.CCTV_ID = #{ CCTV_ID }
+			    <if test="skey != null and skey != ''">and A.HIST_TYPE like #{sval}</if>
+			    ORDER BY HIST_ID DESC 
+			) A WHERE page = TO_NUMBER( #{page} )
+			ORDER BY 1 DESC
+	</select>
+	
+	<select id="getFacilityHistoryXXX" resultType="java.util.HashMap">
+		SELECT A.*
+                    , CASE WHEN A.HIST_TYPE='1' THEN '전원상태'
+                    	WHEN A.HIST_TYPE='2' THEN '통신상태'
+                    	WHEN A.HIST_TYPE='3' THEN '모듈상태'
+                    	END HIST_TYPE_STR
+			FROM TB_CCTV_HISTORY A
+			WHERE HIST_ID = #{bid}
+	</select>
+
+	<select id="selectFacilityHistoryMaxIdXXX" resultType="java.lang.String">
+		SELECT 'H' || NVL(LPAD(MAX(SUBSTR(HIST_ID,2,LENGTH(HIST_ID)))+1,5,0),'00001') C FROM TB_CCTV_HISTORY
+	</select>
+	
+	<insert id="insertFacilityHistoryXXX" parameterType="java.util.HashMap" useGeneratedKeys="false" >
+		INSERT INTO TB_CCTV_HISTORY(HIST_ID, CCTV_ID, USER_ID, REGDATE, REGDATES
+			, HIST_TYPE, HIST_STATUS, HIST_COMMENT)
+    	
+    	VALUES (#{HIST_ID}, #{CCTV_ID}, #{USER_ID}, TO_DATE(#{REGDATE}, 'YYYY-MM-DD HH24:MI:SS'), #{REGDATES}
+    		, #{HIST_TYPE}, #{HIST_STATUS}, #{HIST_COMMENT})
+	</insert>
+	
+	<update id="updateFacilityHistoryXXX" parameterType="java.util.HashMap">
+		UPDATE TB_CCTV_HISTORY
+		SET UPDATE_DATE=TO_DATE(#{UPDATE_DATE}, 'YYYY-MM-DD HH24:MI:SS')
+			<if test="HIST_TYPE != null">, HIST_TYPE=#{HIST_TYPE}</if>
+			<if test="HIST_STATUS != null">, HIST_STATUS=#{HIST_STATUS}</if>
+			<if test="HIST_COMMENT != null">, HIST_COMMENT=#{HIST_COMMENT}</if>
+		WHERE HIST_ID = #{bid}
+	</update>
+	
+	<delete id="deleteFacilityHistoryByFcltIdXXX" parameterType="java.util.HashMap">
+		DELETE FROM TB_CCTV_HISTORY WHERE HIST_ID = #{bid}
+	</delete>
+	
+	<delete id="deleteFacilityHistoryXXX" parameterType="java.util.HashMap">
+		DELETE FROM TB_CCTV_HISTORY WHERE CCTV_ID = #{bid}
+	</delete>
+	
+	
+</mapper>

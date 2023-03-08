@@ -1,0 +1,81 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.irodco.web.mapper.StatisticMapper">
+
+	<select id="getStatisticDayList" resultType="java.util.HashMap"
+		parameterType="java.util.HashMap">
+            SELECT NVL(REGDATES, 'TOTAL') REGDATES
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/main') THEN HITCNT ELSE 0 END) MAIN_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/main') THEN HITCNT ELSE 0 END) MAIN_MOB
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/notice', '/notice-view') THEN HITCNT ELSE 0 END) NOTICE_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/notice', '/notice-view') THEN HITCNT ELSE 0 END) NOTICE_MOB
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/admin-qrcode-view', '/admin-qrcode-view2') THEN HITCNT ELSE 0 END) QRCODE_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/admin-qrcode-view', '/admin-qrcode-view2') THEN HITCNT ELSE 0 END) QRCODE_MOB
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/mapobj-cctv-click') THEN HITCNT ELSE 0 END) CCTV_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/mapobj-cctv-click') THEN HITCNT ELSE 0 END) CCTV_MOB
+                , SUM(CASE WHEN STATICS_TYPE IN ('/main', '/notice', '/notice-view', '/qrcode', '/mapobj-cctv-click') THEN HITCNT ELSE 0 END )TOTAL
+            FROM TB_STATISTIC
+			WHERE 1=1
+			<if test="#{sdate != null}">and REGDATES between '${sdate}' and '${edate}' </if>
+			GROUP BY ROLLUP(REGDATES)
+	</select>
+
+	<select id="getStatisticHourList" resultType="java.util.HashMap"
+		parameterType="java.util.HashMap">
+            SELECT NVL(TO_CHAR(REGDATE,'yyyy-MM-dd hh24'), 'TOTAL') REGDATES
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/main') THEN HITCNT ELSE 0 END) MAIN_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/main') THEN HITCNT ELSE 0 END) MAIN_MOB
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/notice', '/notice-view') THEN HITCNT ELSE 0 END) NOTICE_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/notice', '/notice-view') THEN HITCNT ELSE 0 END) NOTICE_MOB
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/admin-qrcode-view', '/admin-qrcode-view2') THEN HITCNT ELSE 0 END) QRCODE_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/admin-qrcode-view', '/admin-qrcode-view2') THEN HITCNT ELSE 0 END) QRCODE_MOB
+                , SUM(CASE WHEN PLATFORM='WEB' AND STATICS_TYPE IN ('/mapobj-cctv-click') THEN HITCNT ELSE 0 END) CCTV_WEB
+                , SUM(CASE WHEN PLATFORM='MOBILE' AND STATICS_TYPE IN ('/mapobj-cctv-click') THEN HITCNT ELSE 0 END) CCTV_MOB
+                , SUM(CASE WHEN STATICS_TYPE IN ('/main', '/notice', '/notice-view', '/qrcode', '/mapobj-cctv-click') THEN HITCNT ELSE 0 END )TOTAL
+            FROM TB_STATISTIC
+			WHERE 1=1
+			<if test="#{sdate != null}">and REGDATES between '${sdate}' and '${edate}' </if>
+			GROUP BY ROLLUP(TO_CHAR(REGDATE,'yyyy-MM-dd hh24'))
+	</select>
+
+	<select id="getCCTVStatisticList" resultType="java.util.HashMap"
+		parameterType="java.util.HashMap">
+			SELECT REGDATES
+                , SUM(CASE WHEN STATICS_TYPE IN ('/main') THEN HITCNT ELSE 0 END) MAIN
+                , SUM(CASE WHEN STATICS_TYPE IN ('/notice', '/notice-view') THEN HITCNT ELSE 0 END) NOTICE
+                , SUM(CASE WHEN STATICS_TYPE IN ('/qrcode') THEN HITCNT ELSE 0 END) QRCODE
+                , SUM(CASE WHEN STATICS_TYPE IN ('/cctv') THEN HITCNT ELSE 0 END) CCTV
+			FROM TB_STATISTIC
+			WHERE 1=1
+			<if test="#{sdate != null}">and REGDATES between '${sdate}' and '${edate}' </if>
+			GROUP BY ROLLUP(REGDATES)
+	</select>
+	
+	
+	
+<!-- 	<insert id="insertStatistic" parameterType="java.util.HashMap" useGeneratedKeys="false" > -->
+	<insert id="insertStatistic" parameterType="java.util.HashMap" >
+        MERGE INTO TB_STATISTIC T
+	        USING ( SELECT #{REG_IP} REG_IP, #{STATICS_TYPE} STATICS_TYPE, #{PLATFORM} PLATFORM FROM DUAL ) S
+	        ON ( TO_CHAR(SYSDATE, 'YYYY-MM-DD') = T.REGDATES AND S.REG_IP = T.REG_IP 
+	        		AND S.STATICS_TYPE = T.STATICS_TYPE AND S.PLATFORM = T.PLATFORM)
+	        WHEN MATCHED THEN
+	            UPDATE SET T.HITCNT = T.HITCNT+1
+	        WHEN NOT MATCHED THEN
+	            INSERT ( REGDATE, REGDATES, REG_IP, STATICS_TYPE, PLATFORM, HITCNT )
+	            VALUES ( SYSDATE, TO_CHAR(SYSDATE, 'YYYY-MM-DD'), S.REG_IP, S.STATICS_TYPE, S.PLATFORM, 1 )
+	</insert>
+	
+<!-- 	<update id="updateIsLiveApp" parameterType="java.util.HashMap" useGeneratedKeys="false" > -->
+	<update id="updateIsLiveApp" parameterType="java.util.HashMap" >
+		INSERT INTO TB_PRCS_STUS_HSTR( PRCS_ID, CLLC_DT, COMM_STUS_CODE, OPRT_STUS_CODE )
+			SELECT CASE WHEN 'MOBILE'='MOBILE' THEN 60102 ELSE 60101 END PRCS_ID
+				, now() CLLC_DT, 1 COMM_STUS_CODE, 1 OPRT_STUS_CODE 
+				
+			UNION ALL
+			SELECT CASE WHEN #{SERVER_NAME}='MOBILE' THEN 60102 ELSE 60101 END PRCS_ID
+				, now() CLLC_DT, 1 COMM_STUS_CODE, 1 OPRT_STUS_CODE 
+				
+	</update>
+
+
+</mapper>
